@@ -16,7 +16,7 @@ Say **hi** → menu:
 4. **Asks when unsure:** if a message could mean two things, the bot offers buttons ("Did you mean: Book appointment / Billing question?") instead of guessing.
 5. **Edit before submit:** the summary has *Submit request · Edit details · Cancel*; people can change any single detail. Typing *menu*, *cancel* or *back* works anywhere.
 6. **Privacy timeout:** a half-finished request is discarded after 30 minutes of silence.
-7. **Optional AI (Claude):** for messages the rules can't classify, the server can ask Claude to pick an intent/slots, or write a SHORT answer from the knowledge in `content.js`. It is a router, not a free chatbot:
+7. **Optional AI (Claude):** for messages the rules can't classify, the server can ask Claude to pick an intent/slots, or write a SHORT answer grounded in `content.js` and the hospital records. Hospital-specific contact questions are answered directly from the directory; AI answers are limited to the approved visitor, admission, billing and hospital information. It is a router, not a free chatbot:
    - emergency words are caught by rules *before* any AI call, and AI is never called for form answers (names, phones)
    - only the user's free-text question is sent, with long numbers redacted
    - the model's reply is validated: intents come from a fixed list; any answer containing a phone number, link or e-mail that is not in Netcare's own content is thrown away

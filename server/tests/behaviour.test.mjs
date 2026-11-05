@@ -59,6 +59,7 @@ r=await run('c',{id:r[0].buttons[0].id}); t('button routes correctly', !!r[0]);
 
 console.log('\nHospital by name / place');
 r=await run('h',{text:'hi'}); r=await run('h',{text:'directions to Netcare Milpark'}); t('single hospital → card with map link', /google\.com\/maps/.test(r[0].body)&&/011 480 5600/.test(r[0].body));
+r=await run('h',{text:'what is the phone number for Milpark'}); t('hospital-specific contact question → verified hospital details', /Netcare Milpark/.test(r[0].body)&&/011 480 5600/.test(r[0].body));
 r=await run('h',{text:'hospital in Durban'}); t('ambiguous → candidate list', r[0].type==='list'&&rowsOf(r[0]).length>=2);
 r=await run('h',{text:'hospitals in Pretoria'}); t('place → hospital list for Pretoria', r[0].type==='list'&&rowsOf(r[0]).some(x=>x.title==='Unitas'));
 r=await run('h',{text:'visiting hours at Rosebank'}); t('visitor + hospital → card with hours note', /Visiting hours: please call/.test(r[0].body));

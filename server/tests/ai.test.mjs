@@ -7,7 +7,7 @@ globalThis.fetch = async (url, init) => {
 };
 const toolUse = (input) => ({ ok: true, status: 200, json: async () => ({ content: [{ type: 'tool_use', name: 'route', input }] }) });
 const { handleMessage } = await import('../src/bot.js');
-const { safeAnswer, redact } = await import('../src/nlu.js');
+const { safeAnswer, redact, aiUnderstand } = await import('../src/nlu.js');
 let fails = 0; const t = (n, c) => { if (!c) { fails++; console.log('  ✗ FAIL:', n); } else console.log('  ✓', n); };
 const run = (u, i) => handleMessage(u, i);
 const reset = () => { calls.length = 0; nextError = null; };
@@ -48,6 +48,10 @@ t('AI answer with a non-Netcare link is REJECTED', !/evil/.test(JSON.stringify(r
 reset(); nextResponse = toolUse({ intent: 'answer', answer: 'Visiting hours differ by hospital, so please call the hospital before you travel to confirm times.' });
 r = await run('b', { text: 'do guests get the same times everywhere' });
 t('a safe grounded AI answer is shown', /Visiting hours differ/.test(r[0].body));
+
+reset(); nextResponse = toolUse({ intent: 'answer', answer: 'Netcare Milpark Hospital is at 9 Guild Road, Parktown West, 2193. Call 011 480 5600.' });
+const hospitalAnswer = await aiUnderstand('Tell me the hospital address and phone number.');
+t('AI receives verified hospital records and can return their listed contact details', /Netcare Milpark Hospital/.test(calls[0].body.system) && /9 Guild Road/.test(hospitalAnswer.answer) && /011 480 5600/.test(hospitalAnswer.answer));
 
 reset(); nextResponse = toolUse({ intent: 'answer', answer: 'Call Netcare 911 on 082 911 in an emergency or 0860 101 151 for gap cover.' });
 r = await run('b', { text: 'which numbers are important' });
