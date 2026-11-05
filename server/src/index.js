@@ -65,6 +65,10 @@ app.post('/api/simulate/reset', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/health', (_req, res) => res.json({ status: 'ok', dataSource: config.paycity.provider }));
+app.get('/health', (_req, res) => res.json({
+  status: 'ok',
+  dataSource: config.netcare.provider,
+  aiEnabled: Boolean(config.ai.key) && config.ai.mode !== 'off',
+}));
 
 app.listen(config.port, () => console.log(`NHBRC bot server listening on :${config.port}`));
