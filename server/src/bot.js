@@ -10,7 +10,9 @@ import { understand, findSpecialty, findHospitals, findPlace } from './nlu.js';
 const sessions = new Map();
 export const resetSession = (id) => sessions.delete(id);
 
-const GREETING = /^(hi|hii+|hello|hey|heita|hallo|start|sawubona|molo|dumela|thobela|ndaa|haai)\b/i;
+const GREETING_WORDS = '(?:hi|hii+|hello|hey|heita|hallo|start|sawubona|molo|dumela|thobela|ndaa|haai|good morning|good afternoon|good evening)';
+const GREETING = new RegExp(`^${GREETING_WORDS}[.!?]*$`, 'i');
+const GREETING_PREFIX = new RegExp(`^${GREETING_WORDS}\\b[,.!?\\s]*`, 'i');
 const MENU_WORD = /^(menu|cancel|back|stop|quit|exit)$/i;
 const MAX_SUBMITS_PER_HOUR = 3;
 const IDLE_MS = 30 * 60 * 1000;
@@ -368,6 +370,7 @@ export async function handleMessage(from, { text: raw = '', id = '' }) {
   const s = sessions.get(from) || { started: false, consent: false, awaiting: null, form: null, purpose: null, lastHospital: null, billTopic: null, pendingSlots: null, submits: [], updatedAt: Date.now() };
   sessions.set(from, s);
   const input = raw.trim();
+  const message = input.replace(GREETING_PREFIX, '').trim();
 
   // privacy: forget half-finished requests after 30 minutes of silence
   const now = Date.now();
@@ -379,20 +382,21 @@ export async function handleMessage(from, { text: raw = '', id = '' }) {
   if (input && EMERGENCY_WORDS.test(input)) { s.awaiting = null; s.form = null; s.purpose = null; return emergencyMsgs(input); }
 
   // 1. A typed answer is expected (name, phone, reference…)
-  if (s.awaiting && !id && input && !GREETING.test(input)) {
-    if (MENU_WORD.test(input)) return cancelFlow(s);
-    return handleAwaiting(s, input);
+  if (s.awaiting && !id && message) {
+    if (MENU_WORD.test(message)) return cancelFlow(s);
+    return handleAwaiting(s, message);
   }
 
   // 1b. LOCK: while a request is in progress, stay inside it
   if (s.form) {
-    const locked = await lockedHandler(s, input, id);
+    const locked = await lockedHandler(s, message || input, id);
     if (locked) return locked;
   }
   if (id) s.awaiting = null;
 
   // 2. Greeting / first message
-  if (GREETING.test(input) || !s.started) { s.started = true; s.awaiting = null; s.form = null; s.purpose = null; return [mainMenu(TEXT.welcome)]; }
+  if (GREETING.test(input)) { s.started = true; s.awaiting = null; s.form = null; s.purpose = null; return [mainMenu(TEXT.welcome)]; }
+  s.started = true;
 
   // 3. Buttons and lists
   switch (id) {
@@ -443,12 +447,12 @@ export async function handleMessage(from, { text: raw = '', id = '' }) {
   if (id.startsWith('fld_action_') && s.form) { s.form.data.action = id.slice(11); return nextStep(s); }
 
   // 4. Typed words
-  if (MENU_WORD.test(input)) return [mainMenu()];
-  if (!input) return [text(TEXT.fallback), mainMenu()];
-  const ref = input.match(/\bNC-[A-Z0-9]{6}\b/i); // a pasted reference number is looked up straight away
+  if (MENU_WORD.test(message)) return [mainMenu()];
+  if (!message) return [text(TEXT.fallback), mainMenu()];
+  const ref = message.match(/\bNC-[A-Z0-9]{6}\b/i); // a pasted reference number is looked up straight away
   if (ref) return lookupRef(s, ref[0]);
 
-  const u = await understand(input);
+  const u = await understand(message);
   if (u.clarify) {
     s.pendingSlots = u.slots;
     return [buttons(TEXT.clarify, u.clarify.map((i) => ({ id: `clar_${i}`, title: INTENT_LABEL[i] || i })))];

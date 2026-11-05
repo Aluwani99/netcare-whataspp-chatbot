@@ -71,7 +71,7 @@ export const TEXT = {
   humanNote: 'I can\'t transfer you to a person in this chat, but here is how to reach Netcare directly:',
   menuFooter: 'Type menu anytime',
   more: 'Is there anything else I can help with?',
-  fallback: "Sorry, I didn't understand that. Please use the *Menu* to choose a topic.",
+  fallback: "Sorry, I didn't understand that. You can ask me to find a hospital, request an appointment, get visitor or admission information, or help with billing. Type *menu* to browse options.",
 
   emergency:
     '🚨 *If this is an emergency, act now:*\n• Call *Netcare 911: 082 911* (24/7)\n• Or call *112* from a cellphone\n• Public ambulance: *10177*\n• Go to the nearest hospital emergency unit\n\nGive your exact location and a number the crew can call back.\n\nThis assistant cannot give medical advice or send an ambulance.',

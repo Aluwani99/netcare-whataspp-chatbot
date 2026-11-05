@@ -33,6 +33,8 @@ t('"asdf qwerty" → no intent', n('asdf qwerty').intents.length===0);
 console.log('\nMenu');
 let r=await run('m',{text:'hi'}); t('menu is sectioned (4 sections, 8 rows)', r[0].sections.length===4 && rowsOf(r[0]).length===8);
 t('welcome invites natural typing', /ENT specialist/.test(r[0].body));
+r=await run('first-request',{text:'directions to Netcare Milpark'}); t('first message is handled as a request, not swallowed by welcome', /Netcare Milpark/.test(r[0].body)&&/google\.com\/maps/.test(r[0].body));
+r=await run('first-greeted-request',{text:'Hi, directions to Netcare Milpark'}); t('greeting-prefixed first request is understood', /Netcare Milpark/.test(r[0].body)&&/google\.com\/maps/.test(r[0].body));
 
 console.log('\nNatural typing → pre-filled request');
 r=await run('p1',{text:'hi'}); r=await run('p1',{text:'I need an ENT at Sunninghill next Tuesday morning'});
